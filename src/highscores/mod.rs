@@ -1,30 +1,26 @@
 //! This module contains the highscores system.
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! ```
 //! highscores::print_highscores();
 //! ```
-//! 
+//!
 //! ```
 //! let new_player = PlayerInfo {
 //!     name: String::from("random_player_name"),
 //!     score: 42069,
 //! }
-//! 
+//!
 //! highscores::add_highscores(new_player);
 //! ```
-//! 
+//!
 //! # Note
-//! 
+//!
 //! The highscores system is not flexible because it uses a hardcoded path.
-//! 
-//! # Safety
-//! 
-//! The highscores system is not safe because it uses a hardcoded path.
-//! 
+//!
 //! # TODO
-//! 
+//!
 //! * Add a prompt to ask the user if they want to delete the save data.
 //! * Look for faster encryption.
 
@@ -34,10 +30,10 @@ pub mod encryption;
 pub mod compression;
 
 use std::collections::BTreeMap;
-use std::time::{SystemTime, Duration, SystemTimeError};
+use std::time::{ SystemTime, Duration, SystemTimeError };
 use std::str;
 
-use self::error::{SaveResult, HandleSaveError};
+use self::error::{ SaveResult, HandleSaveError };
 use self::lib::PlayerInfo;
 
 static DEBUG: bool = true;
@@ -45,7 +41,7 @@ static DEBUG: bool = true;
 static ENABLE_ENCRYPTION: bool = false;
 static ENABLE_COMPRESSION: bool = true;
 
-static SAVE_PATH: &str = "src/experiments/tetris/highscores/scores.sav";
+static SAVE_PATH: &str = "src/highscores/scores.sav";
 
 ///Prints the highscores.
 pub fn print_highscores() -> SaveResult<()> {
@@ -56,10 +52,9 @@ pub fn print_highscores() -> SaveResult<()> {
     } else {
         for (score, player_name) in highscores.iter().rev() {
             println!("{}: {}", player_name, score);
-
         }
     }
-    return Ok(())
+    return Ok(());
 }
 
 ///Adds the highscores.
@@ -68,7 +63,12 @@ pub fn add_highscores(player_info: PlayerInfo) -> SaveResult<()> {
 
     highscores.entry(player_info.score).or_insert(player_info.name.clone());
 
-    if let Some(existing_score) = highscores.clone().iter().find(|&(_, v)| v == &player_info.name) {
+    if
+        let Some(existing_score) = highscores
+            .clone()
+            .iter()
+            .find(|&(_, v)| v == &player_info.name)
+    {
         if player_info.score > *existing_score.0 {
             highscores.remove(existing_score.0);
         }
@@ -80,7 +80,7 @@ pub fn add_highscores(player_info: PlayerInfo) -> SaveResult<()> {
 
     save_highscores(check_highscores)?;
 
-    return Ok(())
+    return Ok(());
 }
 
 ///Loads the highscores.
@@ -89,7 +89,9 @@ pub fn load_highscores() -> SaveResult<BTreeMap<u32, String>> {
 
     let loaded_file: Vec<u8> = lib::load_file(SAVE_PATH.to_owned());
 
-    if loaded_file.is_empty() { return Ok(BTreeMap::<u32, String>::new()); }
+    if loaded_file.is_empty() {
+        return Ok(BTreeMap::<u32, String>::new());
+    }
 
     if ENABLE_ENCRYPTION {
         if ENABLE_COMPRESSION {
@@ -97,15 +99,18 @@ pub fn load_highscores() -> SaveResult<BTreeMap<u32, String>> {
             let decrypted: String = encryption::decrypt_saves(decompressed).cathegorize()?;
             let map: BTreeMap<u32, String> = lib::deserialize_save(decrypted).cathegorize()?;
 
-            if DEBUG {debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;};
+            if DEBUG {
+                debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;
+            }
 
             return Ok(map);
-
         } else {
             let decrypted: String = encryption::decrypt_saves(loaded_file).cathegorize()?;
             let map: BTreeMap<u32, String> = lib::deserialize_save(decrypted).cathegorize()?;
-            
-            if DEBUG {debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;};
+
+            if DEBUG {
+                debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;
+            }
 
             return Ok(map);
         }
@@ -113,17 +118,24 @@ pub fn load_highscores() -> SaveResult<BTreeMap<u32, String>> {
         if ENABLE_COMPRESSION {
             let decompressed: Vec<u8> = compression::decompress_saves(loaded_file).cathegorize()?;
             let to_str: &str = lib::from_bytes_to_str(&decompressed).cathegorize()?;
-            let map: BTreeMap<u32, String> = lib::deserialize_save(to_str.to_owned()).cathegorize()?;
+            let map: BTreeMap<u32, String> = lib
+                ::deserialize_save(to_str.to_owned())
+                .cathegorize()?;
 
-            if DEBUG {debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;};
+            if DEBUG {
+                debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;
+            }
 
             return Ok(map);
-
         } else {
             let to_str: &str = lib::from_bytes_to_str(&loaded_file).cathegorize()?;
-            let map: BTreeMap<u32, String> = lib::deserialize_save(to_str.to_owned()).cathegorize()?;
+            let map: BTreeMap<u32, String> = lib
+                ::deserialize_save(to_str.to_owned())
+                .cathegorize()?;
 
-            if DEBUG {debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;};
+            if DEBUG {
+                debug(true, false, &map, fn_run_time.elapsed(), &0).cathegorize()?;
+            }
 
             return Ok(map);
         }
@@ -131,15 +143,20 @@ pub fn load_highscores() -> SaveResult<BTreeMap<u32, String>> {
 }
 
 ///Trims the highscores to the specified amount.
-fn trim_highscores(mut highscores: BTreeMap<u32, String>, max_count: i32) -> SaveResult<BTreeMap<u32, String>> {
+fn trim_highscores(
+    mut highscores: BTreeMap<u32, String>,
+    max_count: i32
+) -> SaveResult<BTreeMap<u32, String>> {
     let truncated_highscores: BTreeMap<u32, String> = highscores.clone();
     let mut count: i32 = 0;
     for (s, _) in truncated_highscores.iter().rev() {
         if count >= max_count {
-            if DEBUG {debug(false, true, &highscores, SystemTime::now().elapsed(), s).cathegorize()?;};
+            if DEBUG {
+                debug(false, true, &highscores, SystemTime::now().elapsed(), s).cathegorize()?;
+            }
             highscores.remove(s);
         }
-        count += 1
+        count += 1;
     }
 
     return Ok(highscores);
@@ -161,30 +178,42 @@ fn save_highscores(scores: BTreeMap<u32, String>) -> SaveResult<()> {
         }
     } else {
         if ENABLE_COMPRESSION {
-            let compressed: Vec<u8> =  compression::compress_saves(saveformat).cathegorize()?;
+            let compressed: Vec<u8> = compression::compress_saves(saveformat).cathegorize()?;
             lib::write_to_file(SAVE_PATH.to_owned(), compressed).cathegorize()?;
         } else {
             lib::write_to_file(SAVE_PATH.to_owned(), saveformat).cathegorize()?;
-        }        
+        }
     }
 
-    if DEBUG {debug(false, false, &scores, fn_run_time.elapsed(), &0).cathegorize()?;};
+    if DEBUG {
+        debug(false, false, &scores, fn_run_time.elapsed(), &0).cathegorize()?;
+    }
 
-    return Ok(())
+    return Ok(());
 }
 
 //DEBUGING
 
 ///A debug function. Prints the time it took to execute the function and the values that have been loaded or saved.
-fn debug(load: bool, trim: bool, map: &BTreeMap<u32, String>, time: Result<Duration, SystemTimeError>, key: &u32) -> SaveResult<()> {
+fn debug(
+    load: bool,
+    trim: bool,
+    map: &BTreeMap<u32, String>,
+    time: Result<Duration, SystemTimeError>,
+    key: &u32
+) -> SaveResult<()> {
     if load {
         let function_duration: Duration = match time {
             Ok(e) => e,
             Err(_) => {
-                return Err(Box::new(error::SaveError::new(
-                    error::SaveErrorKind::Debug,
-                    "error while getting the load_highscores() function duration".to_owned(),
-                )))
+                return Err(
+                    Box::new(
+                        error::SaveError::new(
+                            error::SaveErrorKind::Debug,
+                            "error while getting the load_highscores() function duration".to_owned()
+                        )
+                    )
+                );
             }
         };
         println!(
@@ -196,10 +225,14 @@ fn debug(load: bool, trim: bool, map: &BTreeMap<u32, String>, time: Result<Durat
         let function_duration: Duration = match time {
             Ok(e) => e,
             Err(_) => {
-                return Err(Box::new(error::SaveError::new(
-                    error::SaveErrorKind::Debug,
-                    "error while getting the save_highscores() function duration".to_owned(),
-                )))
+                return Err(
+                    Box::new(
+                        error::SaveError::new(
+                            error::SaveErrorKind::Debug,
+                            "error while getting the save_highscores() function duration".to_owned()
+                        )
+                    )
+                );
             }
         };
         println!(
@@ -207,14 +240,9 @@ fn debug(load: bool, trim: bool, map: &BTreeMap<u32, String>, time: Result<Durat
             function_duration.as_nanos()
         );
         println!("The folowing values have been saved: \n {:?} \n", map);
-    }
-    else if trim {
-        println!(
-            "The folowing values has been removed: \n {:?} \n",
-            map.get_key_value(key)
-        );
-    }
-    else {
+    } else if trim {
+        println!("The folowing values has been removed: \n {:?} \n", map.get_key_value(key));
+    } else {
         print!("This function should not have been called");
     }
 
