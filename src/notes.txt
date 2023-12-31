@@ -1,0 +1,54 @@
+Breakdown of the game:
+
+The game should start by creating a grid of 12x24 squares.
+Then it should look at position 0,0 and if it's a wall, if yes then it should render a grey square.
+Then it should look at position 0,1 until it reaches 0,22 and render a grey square for each wall.
+Then it should look at position 1,0 and if it's a wall, if yes then it should render a grey square, etc...
+After the walls are rendered, the game can start.
+
+The game should start by creating a tetromino.
+The tetromino with the shape and color should be chosen randomly.
+it's x position should be random between 1 and 10.
+it's y position should be 24. (the two line at the top should not be rendered)
+The tetromino should be rendered.
+
+During an update, the game should check the values of each positions of the grid to determine what to render.
+
+The tetromino should move down by one square with the move_down method every 1 second.
+The game should listen for the player's input. And call the move_left, move_right, rotate methods on input.
+When the tetromino moves, the values of the grid should be updated(occupied or not).
+
+If the tetromino is not at the bottom of the grid or if it's not on top of another tetromino, it should keep moving.
+
+If the tetromino is at the bottom of the grid or if it's on top of another tetromino, it should stop moving.
+After the tetromino stops moving, the game should change the tetromino as placed.
+The game should then check if there is a line that is full.
+
+If there is a line that is full, the game should clear the line. Add to the score.
+If the score is equal to 4294967295, the game should stop.
+The lines over the cleared line should move down by one square.
+then the game should create a new tetromino.
+
+If there is no line that is full, the game should create a new tetromino.
+If the placed tetromino is at the top of the grid, the game should stop.
+
+The game should ask the player for their name.
+The game should save the score and the name of the player if it's in the top 10. And show the highscores.
+The game should ask the player if they want to play again.
+If the player wants to play again, the game should start again.
+If the player doesn't want to play again, the game should go back to the main menu.
+
+
+Mechanics
+
+Blocks (tetromino) can turn, move faster on player input
+They appear randomly on top after placing them
+their is multiple types
+
+when forming a complete line they disapear, add score and the other blocks get down (blocks wont disapear completely, only the parts on the line) 
+when they are placed they are fixed => better create a new entity for the fixed blocks, verify the status of all the grid blocks when placing a tetromino with a 'state: bool', add coord: x and y 
+
+blocks 
+
+The game take place in a grid
+
