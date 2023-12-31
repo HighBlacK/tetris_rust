@@ -17,7 +17,7 @@
 //! The module is not flexible because it uses a hardcoded encryption key.
 //! This option mainly exists to prevent the laymen user from modifying the highscores file. It's not meant to be a secure encryption.
 //! It's computationally expensive. It adds about 0.5 seconds to the program's runtime.
-//! Compression is recommended since it would accomplish the same goal and has the added benefit of reducing the save file size.
+//! Compression is recommended since it would accomplish the same goal, has the added benefit of reducing the save file size and is way faster.
 //! 
 //! # Safety
 //! 
@@ -25,7 +25,6 @@
 //! 
 //! # Todo
 //! 
-//! * Consider making the empty file hidden
 //! * Look for faster encryption
 //! 
 //! # See also
@@ -40,13 +39,14 @@ use age::secrecy::Secret;
 use std::io::{Read, Write};
 use std::str;
 use std::sync::Arc;
+
 use super::error::{SaveError, HandleSaveError, SaveResult};
 use super::error::SaveErrorKind;
 use super::lib;
 
 
 static ENCRYPTION_KEY: &str = "o2Os#XJo&c1IP2@p5TOv9z@Cl5qw?9XejR2M0Di#";
-static EMPTY_FILE_PATH: &str = "src/experiments/tetris/highscores/.empty";
+static EMPTY_FILE_PATH: &str = "src/highscores/.empty";
 
 /// Encrypts the save data.
 pub fn encrypt_saves(saveformat: String) -> SaveResult<Vec<u8>> {
@@ -98,7 +98,8 @@ pub fn create_empty_encrypted_file() -> SaveResult<()> {
     let empty: String = String::new();
     let encrypted: Vec<u8> = encrypt_saves(empty)?;
 
-    lib::write_to_file(EMPTY_FILE_PATH.to_owned(), encrypted)?;
+    lib::write_to_hidden_file(EMPTY_FILE_PATH, encrypted)?;
+    
     Ok(())
 }
 

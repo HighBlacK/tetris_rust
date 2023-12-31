@@ -17,8 +17,12 @@
 
 use std::collections::{BTreeMap, HashMap};
 use std::fs::{self, write, File};
-use std::io::{self, ErrorKind};
+use std::io::{self, ErrorKind, Write};
 use std::str;
+use std::fs::OpenOptions;
+use std::os::windows::fs::OpenOptionsExt;
+
+use winapi::um::winnt::FILE_ATTRIBUTE_HIDDEN;
 
 use serde::{Serialize, Deserialize};
 
@@ -103,7 +107,31 @@ where T: AsRef<[u8]>
         Err(_) => {
             return Err(Box::new(SaveError::new(
                 SaveErrorKind::FileError, 
-                "Error while wrinting file".to_owned()
+                "Error while writing file".to_owned()
+            )))
+        }
+    }
+}
+
+/// Writes the 'contents' to a hidden file at 'path'.
+pub fn write_to_hidden_file<T>(path: &str, contents: T) -> SaveResult<()>
+where T: AsRef<[u8]>
+{   
+    let mut file = match OpenOptions::new().write(true).create(true).attributes(FILE_ATTRIBUTE_HIDDEN).open(path.to_owned()) {
+        Ok(file) => file,
+        Err(_) => {
+            return Err(Box::new(SaveError::new(
+                SaveErrorKind::FileError,
+                "Error while opening file".to_owned(),
+            )))
+        }
+    };
+    match file.write_all(contents.as_ref()) {
+        Ok(written) => Ok(written),
+        Err(_) => {
+            return Err(Box::new(SaveError::new(
+                SaveErrorKind::FileError,
+                "Error while writing file".to_owned(),
             )))
         }
     }
